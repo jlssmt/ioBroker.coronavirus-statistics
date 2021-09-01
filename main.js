@@ -22,6 +22,7 @@ let germanHospitalData$;
 // Translator if country names are not iso conform
 const countryTranslator = require('./lib/countryTranslator');
 const {allSpaces, allPointAndCommas, modifyFloatRegex, americaRegex} = require('./lib/regex');
+const {cleanupOldStatesFromPreviousImplementation} = require('./lib/cleanup');
 
 class Covid19 extends utils.Adapter {
 	/**
@@ -40,6 +41,8 @@ class Covid19 extends utils.Adapter {
 	 * Is called when databases are connected and adapter received configuration.
 	 */
 	async onReady() {
+		await this.createChannel('', 'test');
+		await cleanupOldStatesFromPreviousImplementation(this.getAdapterObjectsAsync, this.delObjectAsync, this.getObjectViewAsync, this.config.deleteUnused);
 		try {
 			// Load configuration
 			const selectedCountries = this.config.countries || [];
@@ -367,15 +370,6 @@ class Covid19 extends utils.Adapter {
 						const channelName = `Germany.Bundesland.${federalStateName}`;
 						allGermanyFederalStates.push(federalStateName);
 
-						//ToDo: clean
-						// Delete unused states of previous excel data
-						await this.localDeleteState(`${channelName}._Impfungen.rkiImpfungenProTausend`);
-						await this.localDeleteState(`${channelName}._Impfungen.rkiDifferenzVortag`);
-						await this.localDeleteState(`${channelName}._Impfungen.rkiIndikationAlter`);
-						await this.localDeleteState(`${channelName}._Impfungen.rkiIndikationBeruf`);
-						await this.localDeleteState(`${channelName}._Impfungen.rkiIndikationMedizinisch`);
-						await this.localDeleteState(`${channelName}._Impfungen.rkiImpfungePflegeheim`);
-
 						if (this.config.getAllGermanyFederalStates || selectedGermanyFederalStates.includes(federalStateName)) {
 
 							// Create Channel for each Federal State
@@ -411,15 +405,7 @@ class Covid19 extends utils.Adapter {
 									await this.localCreateState(`${channelName}._Impfungen.rkiZweitimpfungenImpfquote`, 'Zweitimpfungen Impfquote', await this.modify(`round(2)`, germanyVaccinationData[federalStateName].secondVaccQuote));
 
 									// Delete unused states from previous RKI version
-									await this.localDeleteState(`${channelName}._Impfungen.rkiErstimpfungenBioNTech`);
-									await this.localDeleteState(`${channelName}._Impfungen.rkiErstimpfungenModerna`);
-									await this.localDeleteState(`${channelName}._Impfungen.rkiErstimpfungenAstraZeneca`);
-									await this.localDeleteState(`${channelName}._Impfungen.rkiErstimpfungenDifferenzVortag`);
-									await this.localDeleteState(`${channelName}._Impfungen.rkiZweitimpfungenKumulativ`);
-									await this.localDeleteState(`${channelName}._Impfungen.rkiZweitimpfungenBioNTech`);
-									await this.localDeleteState(`${channelName}._Impfungen.rkiZweitimpfungenModerna`);
-									await this.localDeleteState(`${channelName}._Impfungen.rkiZweitimpfungenAstraZeneca`);
-									await this.localDeleteState(`${channelName}._Impfungen.rkiZweitimpfungenDifferenzVortag`);
+
 
 								}
 							}
@@ -456,21 +442,6 @@ class Covid19 extends utils.Adapter {
 
 							for (const attributeName of Object.keys(feature.attributes)) {
 
-								// Delete vaccination states
-								await this.localDeleteState(`${channelName}._Impfungen.rkiErstimpfungenKumulativ`);
-								await this.localDeleteState(`${channelName}._Impfungen.rkiImpfungenGesamtVerabreicht`);
-								await this.localDeleteState(`${channelName}._Impfungen.rkiErstimpfungenBioNTech`);
-								await this.localDeleteState(`${channelName}._Impfungen.rkiErstimpfungenModerna`);
-								await this.localDeleteState(`${channelName}._Impfungen.rkiErstimpfungenAstraZeneca`);
-								await this.localDeleteState(`${channelName}._Impfungen.rkiErstimpfungenDifferenzVortag`);
-								await this.localDeleteState(`${channelName}._Impfungen.rkiErstimpfungenImpfquote`);
-								await this.localDeleteState(`${channelName}._Impfungen.rkiZweitimpfungenKumulativ`);
-								await this.localDeleteState(`${channelName}._Impfungen.rkiZweitimpfungenBioNTech`);
-								await this.localDeleteState(`${channelName}._Impfungen.rkiZweitimpfungenModerna`);
-								await this.localDeleteState(`${channelName}._Impfungen.rkiZweitimpfungenAstraZeneca`);
-								await this.localDeleteState(`${channelName}._Impfungen.rkiZweitimpfungenDifferenzVortag`);
-								await this.localDeleteState(`${channelName}._Impfungen.rkiZweitimpfungenImpfquote`);
-
 								switch (attributeName) {
 									case 'Aktualisierung': 	//  Last refresh date
 										await this.localDeleteState(`${channelName}.updated`);
@@ -499,8 +470,6 @@ class Covid19 extends utils.Adapter {
 							}
 						}
 					}
-
-					await this.localDeleteState(`Germany._Impfungen`);
 
 					allGermanyFederalStates = allGermanyFederalStates.sort();
 					this.log.debug(`allGermanyFederalStates : ${JSON.stringify(allGermanyFederalStates)}`);
@@ -786,6 +755,7 @@ class Covid19 extends utils.Adapter {
 				}
 			}
 		} catch (error) {
+			console.log(error);
 			// do nothing
 		}
 	}
