@@ -41,13 +41,6 @@ class Covid19 extends utils.Adapter {
 	 * Is called when databases are connected and adapter received configuration.
 	 */
 	async onReady() {
-		scraper.get('https://www.lgl.bayern.de/gesundheit/infektionsschutz/infektionskrankheiten_a_z/coronavirus/karte_coronavirus/index.htm')
-			.then(data => data[0])
-			.then(data => {
-				this.localCreateState('Germany.Bundesland.Bayern.hospital_index', 'hospital_index', data[1]['Tagesaktueller Wert']);
-			})
-			.catch(error => console.log(error));
-
 		try {
 			// Load configuration
 			const selectedCountries = this.config.countries || [];
@@ -717,6 +710,13 @@ class Covid19 extends utils.Adapter {
 			} else {
 				await this.localDeleteState(`Germany.Bundesland`);
 			}
+
+			await scraper.get('https://www.lgl.bayern.de/gesundheit/infektionsschutz/infektionskrankheiten_a_z/coronavirus/karte_coronavirus/index.htm')
+				.then(data => data[0])
+				.then(data => {
+					this.localCreateState('Germany.Bundesland.Bayern.hospital_index', 'hospital_index', data[1]['Tagesaktueller Wert']);
+				})
+				.catch(error => this.log.error(`Pls report error to jlssmt: ${error}`));
 
 			// Get data for cities and counties of Germany, ensure tables always have values to load
 			if (this.config.getGermanyCities || this.config.getGermanyCounties || !allGermanyCitiesLoaded || !allGermanyCountiesLoaded) {
