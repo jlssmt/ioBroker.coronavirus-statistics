@@ -7,6 +7,7 @@ const VaccinationService = require('./lib/services/vaccination.service');
 // you need to create an adapter
 const utils = require('@iobroker/adapter-core');
 const {default: axios} = require('axios');
+const scraper = require('table-scraper');
 const adapterName = require('./package.json').name.split('.').pop();
 const stateAttr = require('./lib/stateAttr.js'); // State attribute definitions
 const {wait} = require('./lib/tools');
@@ -40,6 +41,13 @@ class Covid19 extends utils.Adapter {
 	 * Is called when databases are connected and adapter received configuration.
 	 */
 	async onReady() {
+		scraper.get('https://www.lgl.bayern.de/gesundheit/infektionsschutz/infektionskrankheiten_a_z/coronavirus/karte_coronavirus/index.htm')
+			.then(data => data[0])
+			.then(data => {
+				this.localCreateState('Germany.Bundesland.Bayern.hospital_index', 'hospital_index', data[1]['Tagesaktueller Wert']);
+			})
+			.catch(error => console.log(error));
+
 		try {
 			// Load configuration
 			const selectedCountries = this.config.countries || [];
