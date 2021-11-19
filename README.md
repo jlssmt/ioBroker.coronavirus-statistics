@@ -96,7 +96,7 @@ As first value, the name from the warning message must be taken from the log. Th
 -->
 
 
-### __WORK IN PROGRESS__
+### 0.9.0-hospitalindex.0 (2021-11-19)
 * (jlssmt) added hospitalindex for bavaria
 
 
@@ -115,10 +115,6 @@ As first value, the name from the warning message must be taken from the log. Th
 * (jlssmt) Hospital data for Germany added
 * (jlssmt) fix umlauts in hospital service
 * (jlssmt) extend api timer to fix 502 errors
-
-### 0.8.3 (2021-08-20)
-* (jlssmt) Code refactoring
-* (DutchmanNL) Bugfix: Unwanted deletion of data points for Germany solved 
 
 ## License
 MIT License
