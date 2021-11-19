@@ -95,6 +95,11 @@ As first value, the name from the warning message must be taken from the log. Th
 	* (DutchmanNL) 
 -->
 
+
+### __WORK IN PROGRESS__
+* (jlssmt) added hospitalindex for bavaria
+
+
 ### 0.8.7 (2021-11-17)
 * (DutchmanNL) Bugfix: Added missing definitions
 * (jlssmt) Error handling for missing state attribute definitions Optimized
